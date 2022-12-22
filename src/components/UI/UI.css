@@ -1,0 +1,130 @@
+:root {
+  --color-background-up: rgb(180, 180, 180, .3);
+  --color-background-down: rgb(210, 210, 210, .3);
+  --color-option-button-center-gradient: rgb(190, 190, 190, 0.6);
+  --color-option-button-outer-gradient: rgb(160, 160, 160, 0.6);
+  --color-option-button-active: rgba(128, 128, 128, 0.6);
+  --color-option-button-hover: rgba(204, 204, 204, 0.6);
+  --color-font-option-button: rgb(0, 0, 0);
+  --color-outline-option-button: rgb(59, 59, 59);
+}
+
+* {
+  font-size: 1rem;
+}
+
+button {
+  background-color:rgba(201, 201, 201, 0.116);
+  border-width: 1px;
+  border-radius: 4px;
+  margin: 3px;
+  width: 100%;
+}
+
+#inputPanelDiv {
+  display: flex;
+  flex-direction: column;
+  max-width: 28vw;
+  /* margin: 10px; */
+  padding: 10px;
+  border-radius: 5px;
+  border: 2px solid gray;
+  background: linear-gradient(
+    var(--color-background-up),
+    var(--color-background-down))
+    no-repeat center center fixed;
+  /* background: blue; */
+}
+
+label {
+  margin: 2px;
+}
+
+#animDuration {
+  width: 11vw;
+}
+
+.inputControls {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px;
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
+input[type="range"] {
+  width: 200px;
+}
+
+#rangeValueDiv {
+  width: 80px;
+  text-align: right;
+  display: inline-block;
+}
+
+.parameterInputs {
+  border-width: 1px;
+  border-radius: 4px;
+  height: 20px;
+  float: right;
+}
+
+/* .textInputs {
+  display: inline;
+} */
+
+#inputOptionsDiv {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  /* flex-wrap: wrap; */
+  /* align-items: center; */
+  /* margin: 10px; */
+}
+
+.sortOption {
+  background: radial-gradient(
+      var(--color-option-button-center-gradient),
+      var(--color-option-button-outer-gradient));
+  color: var(--color-font-option-button);
+  /* padding: 4px 0; */
+  /* margin: 4px 6px; */
+  border-radius: 2px;
+  padding: 5px 2px;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sortOption div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+}
+
+.sortOption:hover {
+  background-color: var(--color-option-button-hover);
+}
+
+.sortOption:active {
+  background-color: var(--color-option-button-active);
+}
+
+.radioInput:checked + .sortOption {
+  outline: 2px solid var(--color-outline-option-button);
+}
+
+.radioInput {
+  display: none;
+}
+
+.back-filter {
+  backdrop-filter: blur(5px);
+}
+
+.shadow {
+  box-shadow: 5px 5px 20px rgb(73, 73, 73, .6);
+}
