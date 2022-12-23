@@ -24,9 +24,9 @@ export const useKeyboard = () => {
   const [keyDownHandlers, setKeyDownHandlers] = useState({});
 
   // TODO: Fix: when adding event, it overrides the other action with the same key
-  const addKeydownEvent = (key, action) => {
+  const addKeydownEvent = useCallback((key, action) => {
     setKeyDownHandlers(prev => ({...prev, [key]: action}));
-  }
+  }, []);
 
   // useEffect(() => {
 
@@ -45,12 +45,11 @@ export const useKeyboard = () => {
     // one object and choose handler based on key
     let action = actionByKey(e.code);
     if (action) {
-      setActions((args) => {
-        return ({
-          ...args,
-          [action]: true
-        })
-    })
+      setActions((args) => ({
+        ...args,
+        [action]: true
+      })
+    )
     } else {
       action = keyDownHandlers[e.code];
       if (action)
@@ -61,12 +60,11 @@ export const useKeyboard = () => {
   const handleKeyUp = useCallback((e) => {
     const action = actionByKey(e.code);
     if (action) {
-      setActions((args) => {
-        return ({
-          ...args,
-          [action]: false
-        })
-    })
+      setActions((args) => ({
+        ...args,
+        [action]: false
+      })
+    )
     }
   }, [])
 

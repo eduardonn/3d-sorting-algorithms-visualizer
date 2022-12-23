@@ -8,6 +8,11 @@ const algorithmsList = [
     { name: 'bucket',       label: 'Bucket Sort' }
 ];
 
+/**
+ * Implements sorting algorithms and executes callback
+ * functions at every action performed (e.g. swapping elements)
+ * @param swapCallback called at every swap
+ */
 class AnimatedSorter {
     constructor(swapCallback) {
         this.swapCallback = swapCallback;

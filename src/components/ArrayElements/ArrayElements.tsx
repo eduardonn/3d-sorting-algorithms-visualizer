@@ -1,9 +1,11 @@
-import React, { createRef, useEffect, useLayoutEffect, useRef } from 'react';
-import { useArrayStore } from '../../hooks/useArrayStore.tsx';
-import { useKeyboard } from '../../hooks/useKeyboard';
-import { AnimatedSorter, createRandomArray } from '../../utils/';
+import React, { createRef, useLayoutEffect, useMemo } from 'react';
+import { useArrayStore } from '../../hooks/useArrayStore';
+import { AnimatedSorter } from '../../utils/';
 import { ArrayElement } from '../ArrayElement/ArrayElement';
-import { Mesh } from 'three';
+import { Mesh, Vector3 } from 'three';
+import { useAnimationStore } from '../../hooks/useAnimationStore';
+
+type RefArray = Array<React.MutableRefObject<Mesh>>
 
 /**
  * Callback to be passed to AnimatedSorter.
@@ -14,80 +16,62 @@ import { Mesh } from 'three';
  * @param b position of element b
  */
 const swapElements = (arrayRefs: RefArray, a: number, b: number) => {
-  let elementA = arrayRefs.current[a].current;
-  let elementB = arrayRefs.current[b].current;
-  let elementAPositionX = elementA.position.x;
-  elementA.position.x = elementB.position.x;
-  elementB.position.x = elementAPositionX;
+  [arrayRefs[a].current.position.x, arrayRefs[b].current.position.x] =
+    [arrayRefs[b].current.position.x, arrayRefs[a].current.position.x];
 
-  [arrayRefs.current[a].current, arrayRefs.current[b].current] =
-    [arrayRefs.current[b].current, arrayRefs.current[a].current];
+  [arrayRefs[a].current, arrayRefs[b].current] =
+    [arrayRefs[b].current, arrayRefs[a].current];
 }
 
-const changeArrayLength = (arrayRefs: RefArray, elements: Array<number>) => {
-  arrayRefs.current = Array(elements.length).fill(null).map(
-    (_, i: number) => arrayRefs.current[i] || createRef());
-  }
-
-type RefArray = React.MutableRefObject<
-  Array<React.MutableRefObject<Mesh>>
->
+// const changeArrayLength = (arrayRefs: RefArray, elements: Array<number>) => {
+//   arrayRefs.current = Array(elements.length).fill(null).map(
+//     (_, i: number) => arrayRefs.current[i] || createRef());
+//   }
 
 export const ArrayElements: React.FC<{ gap: number }> = ({ gap }) => {
-  const [ elements, setArrayElements, arraySettings ] = useArrayStore(
-    state => [ state.elements, state.setArrayElements, state.arraySettings, state.setArraySettings ]
+  const [ elements ] = useArrayStore(
+    state => [ state.elements ]
   );
 
-  const { addKeydownEvent } = useKeyboard();
-  const arrayRefs: RefArray = useRef(Array(elements.length).fill(null).map(() => createRef()));
-  const animatedSorter = new AnimatedSorter((a: number, b: number) => swapElements(arrayRefs, a, b));
+  const [ setStartAnimation ] = useAnimationStore(
+    state => [ state.setStartAnimation ]
+  );
 
-  useEffect(() => {
-    console.log('useEffect by elements');
-    addKeydownEvent('KeyX', () => {
-      animatedSorter.insertion(elements);
-      // swapElements(arrayRefs, 1, 3);
-    });
-  }, [elements])
+  const refArray: RefArray = useMemo(() =>
+    Array(elements.length).fill(null).map(() => createRef() as React.MutableRefObject<Mesh>),
+    [elements],
+  );
 
-  useEffect(() => {
-    console.log('useEffect in ArrayElements');
-    setArrayElements(createRandomArray(
-      arraySettings.minElement,
-      arraySettings.maxElement,
-      arraySettings.amountElements
-    ));
+  const animatedSorter = new AnimatedSorter((a: number, b: number) => {
+    swapElements(refArray, a, b)
+    return new Promise(res => setTimeout(res, 200));
+  });
 
-    // return () => removeKeydownEvent(keyRHandler);
-  }, [arraySettings, setArrayElements]);
+  const startAnimationCallback = (algorithmOption: keyof AnimatedSorter) => {
+    animatedSorter[algorithmOption](elements);
+  };
 
-  useEffect(() => {
-    addKeydownEvent('KeyR', () => {
-      console.log('arrayElements: ', arrayRefs);
-      arrayRefs.current[4].current.position.set(0, 0, 5);
-    });
-  }, [arrayRefs])
+  useLayoutEffect(() => {
+    console.log('setting start animation from ArrayElements');
+    // setStartAnimation(() => console.log('start animation test'));
+    setStartAnimation(startAnimationCallback);
 
-  // useLayoutEffect(() => {
-  //   arrayElementsRefs.current = Array(elements.length).fill(null).map(
-  //     (_, i) => arrayElementsRefs.current[i] || createRef());
-  // }, [elements])
-
-  if (arrayRefs.current !== null && (elements.length !== arrayRefs.current.length)) {
-    changeArrayLength(arrayRefs, elements);
-  }
-
-  console.log();
+    // return () => removeKeydownEvent(keyRHandler)
+  }, //eslint-disable-next-line
+  [startAnimationCallback]
+  )
 
   return (
-    elements.map((v: number, k: number) => {
-      return (
-        <ArrayElement
-          key={k}
-          ref={arrayRefs.current[k]}
-          position={[k * (1 + gap) , v / 2, 0]}
-          height={v} />
-      )
-    })
+    <> 
+      { elements.map((v: number, k: number) => {
+        return (
+          <ArrayElement
+            key={k}
+            ref={refArray[k]}
+            position={new Vector3(k * (1 + gap), v / 2.0, 0)}
+            height={v} />
+        )
+      }) }
+    </>
   );
 }

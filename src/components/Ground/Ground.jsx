@@ -13,6 +13,8 @@ export const Ground = () => {
   metalThreadPlateAlbedoTexture.wrapT = RepeatWrapping;
   metalThreadPlateAlbedoTexture.repeat.set(120, 120);
 
+  console.log('Ground called');
+
   return (
     <mesh receiveShadow ref={ref}>
       <planeBufferGeometry attach='geometry' args={[100, 100]} />

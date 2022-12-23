@@ -1,9 +1,10 @@
-import React from 'react';
-import { useArrayStore } from '../../hooks/useArrayStore.tsx';
+import React, { useState } from 'react';
+import { useArrayStore } from '../../hooks/useArrayStore';
+import { useAnimationStore } from '../../hooks/useAnimationStore';
 import { algorithmsList, createRandomArray } from '../../utils';
 import './UI.css';
 
-const SortOptionButtons = () => {
+const SortOptionButtons = ({ handleOnClick, activeIndex }) => {
   return (
     <>
     <div>
@@ -15,7 +16,8 @@ const SortOptionButtons = () => {
               name="algorithmOption"
               className="radioInput back-filter"
               type="radio"
-              defaultChecked={index ? false : true} />
+              defaultChecked={index === activeIndex ? true : false}
+              onClick={(e) => handleOnClick(e.currentTarget.id)} />
             <div className="sortOption">
               <div><span>{value.label}</span></div>
             </div>
@@ -24,8 +26,8 @@ const SortOptionButtons = () => {
       </div>
     </div>
     </>
-);
-}
+  );
+};
 
 const handleMaxElementOnChange = (setArraySettings, e) => {
   const MAX_ELEMENT = 100;
@@ -58,7 +60,11 @@ const UI = ({ animDuration }) => {
     state => [ state.arraySettings, state.setArraySettings, state.setArrayElements ]
   )
 
-  const handleRandomizeOnClick = (arraySettings) => {
+  const [ startAnimation ] = useAnimationStore(state => [ state.startAnimation ]);
+
+  const [ algorithmOptionSelected, setAlgorithmOptionSelected] = useState(algorithmsList[0].name);
+
+  const handleOnClickRandomize = (arraySettings) => {
     setArrayElements(createRandomArray(
       arraySettings.minElement,
       arraySettings.maxElement,
@@ -100,17 +106,19 @@ const UI = ({ animDuration }) => {
           {/* <span className="textInputs" id="rangeValueElement">{animDuration + 'ms'}</span> */}
         </div>
       </div>
-      <SortOptionButtons />
+      <SortOptionButtons
+        activeIndex={0}
+        handleOnClick={setAlgorithmOptionSelected} />
       <div className='inputControls'>
         <button
           id="sort-array-button"
           className="back-filter shadow"
-          // onClick={handleRandomizeOnClick(arraySettings)}
+          onClick={() => startAnimation(algorithmOptionSelected)}
         >Sort</button>
         <button
           id="randomize-array-button"
           className="back-filter shadow"
-          onClick={() => handleRandomizeOnClick(arraySettings)}>Randomize</button>
+          onClick={() => handleOnClickRandomize(arraySettings)}>Randomize</button>
       </div>
     </div>
   );

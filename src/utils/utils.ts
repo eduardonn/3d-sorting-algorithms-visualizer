@@ -6,6 +6,6 @@
 */
 export function createRandomArray(minElement: number, maxElement: number, numElements: number): Array<number> {
     return Array(numElements).fill(null).map((_, __) => {
-        return Math.random() * (maxElement - minElement + 1) - minElement;
+        return Math.random() * (maxElement - minElement) + minElement;
     });
 }
