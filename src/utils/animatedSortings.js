@@ -5,7 +5,8 @@ const algorithmsList = [
     { name: 'quick',        label: 'Quick Sort' },
     { name: 'selection',    label: 'Selection Sort' },
     { name: 'bubble',       label: 'Bubble Sort' },
-    { name: 'bucket',       label: 'Bucket Sort' }
+    { name: 'bucket',       label: 'Bucket Sort' },
+    { name: 'merge',        label: 'Merge Sort' },
 ];
 
 /**
@@ -61,6 +62,8 @@ class AnimatedSorter {
     }
 
     async swap(arr, a, b) {
+        if (a === b) return;
+        
         await this.swapCallback(a, b);
         [arr[a], arr[b]] = [arr[b], arr[a]];
     }

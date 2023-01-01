@@ -1,77 +1,59 @@
-import React, { createRef, useLayoutEffect, useMemo } from 'react';
+import React, { createRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import { useArrayStore } from '../../hooks/useArrayStore';
-import { AnimatedSorter } from '../../utils/';
 import { ArrayElement } from '../ArrayElement/ArrayElement';
-import { Mesh, Vector3 } from 'three';
-import { useAnimationStore } from '../../hooks/useAnimationStore';
+import { Mesh, MeshStandardMaterial, RepeatWrapping, sRGBEncoding } from 'three';
+import { useKeyboard } from '../../hooks/useKeyboard';
+import { useAnimateArrayElements } from '../../hooks/useAnimateArrayElements';
+import { WWIIShipHull_OldTexture, WWIIShipHull_OldNormalTexture } from '../../images/textures'
 
-type RefArray = Array<React.MutableRefObject<Mesh>>
+export type RefArray = Array<React.MutableRefObject<Mesh>>
 
-/**
- * Callback to be passed to AnimatedSorter.
- * 1. Swap mesh position in the 3D world
- * 2. Swap mesh refs position in the array of references to match 3D world
- * @param arrayRefs array of references
- * @param a position of element a
- * @param b position of element b
- */
-const swapElements = (arrayRefs: RefArray, a: number, b: number) => {
-  [arrayRefs[a].current.position.x, arrayRefs[b].current.position.x] =
-    [arrayRefs[b].current.position.x, arrayRefs[a].current.position.x];
-
-  [arrayRefs[a].current, arrayRefs[b].current] =
-    [arrayRefs[b].current, arrayRefs[a].current];
-}
-
+// TODO: Make array scale dynamically
 // const changeArrayLength = (arrayRefs: RefArray, elements: Array<number>) => {
-//   arrayRefs.current = Array(elements.length).fill(null).map(
-//     (_, i: number) => arrayRefs.current[i] || createRef());
+//   arrayRefs.current = 
 //   }
 
 export const ArrayElements: React.FC<{ gap: number }> = ({ gap }) => {
-  const [ elements ] = useArrayStore(
-    state => [ state.elements ]
+  const [ elements ] = useArrayStore(state => [ state.elements ]);
+  const { addKeydownEvent } = useKeyboard();
+  // const sorter = useAnimatedSortings();
+  
+  const refArray: RefArray = useMemo(() =>{
+    console.log('elements changed');
+    return Array(elements.length).fill(null).map(() => createRef() as React.MutableRefObject<Mesh>);
+  },
+  [elements],
   );
 
-  const [ setStartAnimation ] = useAnimationStore(
-    state => [ state.setStartAnimation ]
-  );
+  useAnimateArrayElements(refArray, elements);
 
-  const refArray: RefArray = useMemo(() =>
-    Array(elements.length).fill(null).map(() => createRef() as React.MutableRefObject<Mesh>),
-    [elements],
-  );
+  useEffect(() => {
+    elements.forEach((v, i) => {
+      refArray[i].current.position.set(i * (1 + gap), v / 2.0, 0);
+      refArray[i].current.scale.set(1, v, 1);
 
-  const animatedSorter = new AnimatedSorter((a: number, b: number) => {
-    swapElements(refArray, a, b)
-    return new Promise(res => setTimeout(res, 200));
-  });
+      const texture = WWIIShipHull_OldTexture.clone();
+      texture.wrapT = RepeatWrapping;
+      texture.repeat.set(.333, .333 * v);
+      texture.encoding = sRGBEncoding;
 
-  const startAnimationCallback = (algorithmOption: keyof AnimatedSorter) => {
-    animatedSorter[algorithmOption](elements);
-  };
+      const material = new MeshStandardMaterial();
+      material.map = texture;
+      refArray[i].current.material = material;
+      // refArray[i].current.texture.wrapT = RepeatWrapping;
+      // refArray[i].current.texture.repeat.set(.5, .5 * v);    
+    })
+    // position={new Vector3(k * (1 + gap), v / 2.0, 0)}
+    // height={v}
+  }, [elements]);
 
-  useLayoutEffect(() => {
-    console.log('setting start animation from ArrayElements');
-    // setStartAnimation(() => console.log('start animation test'));
-    setStartAnimation(startAnimationCallback);
-
-    // return () => removeKeydownEvent(keyRHandler)
-  }, //eslint-disable-next-line
-  [startAnimationCallback]
-  )
+  console.log('ArrayElements called');
 
   return (
-    <> 
-      { elements.map((v: number, k: number) => {
-        return (
-          <ArrayElement
-            key={k}
-            ref={refArray[k]}
-            position={new Vector3(k * (1 + gap), v / 2.0, 0)}
-            height={v} />
-        )
-      }) }
+    <>
+      { elements.map((v, k: number) => 
+        <ArrayElement key={k} ref={refArray[k]} />
+      ) }
     </>
-  );
+  )
 }

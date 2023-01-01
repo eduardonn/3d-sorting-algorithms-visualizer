@@ -4,8 +4,11 @@
  * @param maxElement maximum value in the array
  * @param numElements length of the array
 */
-export function createRandomArray(minElement: number, maxElement: number, numElements: number): Array<number> {
-    return Array(numElements).fill(null).map((_, __) => {
-        return Math.random() * (maxElement - minElement) + minElement;
-    });
+export function createRandomArray(
+    minElement: number = 0,
+    maxElement: number = 10,
+    numElements: number = 10): Array<number> {
+  return Array(numElements).fill(null).map(() => {
+    return Math.random() * (maxElement - minElement) + minElement;
+  });
 }

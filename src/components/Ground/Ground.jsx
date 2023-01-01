@@ -17,7 +17,7 @@ export const Ground = () => {
 
   return (
     <mesh receiveShadow ref={ref}>
-      <planeBufferGeometry attach='geometry' args={[100, 100]} />
+      <planeGeometry attach='geometry' args={[100, 100]} />
       <meshStandardMaterial
         attach='material'
         color={[.84, .84, .84]}

@@ -1,20 +1,20 @@
 import create from 'zustand'
 import { createRandomArray } from '../utils';
 
-interface ArraySettings {
-  amountElements: number;
-  minElement: number;
-  maxElement: number;
+export interface ArraySettings {
+  amountElements?: number;
+  minElement?: number;
+  maxElement?: number;
 }
 
-interface ArrayState {
+interface ArrayStore {
   elements: Array<number>;
   setArrayElements: (elements: Array<number>) => void;
   arraySettings: ArraySettings;
   setArraySettings: (settings: ArraySettings) => void;
 }
 
-export const useArrayStore = create<ArrayState>(set => ({
+export const useArrayStore = create<ArrayStore>(set => ({
   elements: createRandomArray(1, 10, 10),
   setArrayElements: elements => set(_ => ({ elements })),
   arraySettings: {

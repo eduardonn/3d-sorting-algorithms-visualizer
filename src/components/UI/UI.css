@@ -1,9 +1,9 @@
 :root {
   --color-background-up: rgb(180, 180, 180, .3);
   --color-background-down: rgb(210, 210, 210, .3);
-  --color-option-button-center-gradient: rgb(190, 190, 190, 0.6);
-  --color-option-button-outer-gradient: rgb(160, 160, 160, 0.6);
-  --color-option-button-active: rgba(128, 128, 128, 0.6);
+  --color-option-button-center-gradient: rgba(223, 223, 223, 0.6);
+  --color-option-button-outer-gradient: rgba(197, 197, 197, 0.6);
+  --color-option-button-active: rgba(161, 161, 161, 0.6);
   --color-option-button-hover: rgba(204, 204, 204, 0.6);
   --color-font-option-button: rgb(0, 0, 0);
   --color-outline-option-button: rgb(59, 59, 59);
@@ -14,11 +14,19 @@
 }
 
 button {
-  background-color:rgba(201, 201, 201, 0.116);
-  border-width: 1px;
-  border-radius: 4px;
+  border-width: 0px;
+  border-radius: 2px;
+  padding: 3px;
   margin: 3px;
-  width: 100%;
+  width: 50%;
+}
+
+button:active {
+  background-color: var(--color-option-button-active);
+}
+
+button:hover {
+  background-color: var(--color-option-button-hover);
 }
 
 #inputPanelDiv {
@@ -26,7 +34,7 @@ button {
   flex-direction: column;
   max-width: 28vw;
   /* margin: 10px; */
-  padding: 10px;
+  padding: 6px;
   border-radius: 5px;
   border: 2px solid gray;
   background: linear-gradient(
@@ -47,7 +55,11 @@ label {
 .inputControls {
   display: flex;
   justify-content: space-between;
-  margin: 5px;
+  margin-bottom: 5px;
+}
+
+.margin-right {
+  margin-right: 14px;
 }
 
 .space-between {
@@ -84,10 +96,13 @@ input[type="range"] {
   /* margin: 10px; */
 }
 
-.sortOption {
+.background-radial {
   background: radial-gradient(
       var(--color-option-button-center-gradient),
       var(--color-option-button-outer-gradient));
+}
+
+.sortOption {
   color: var(--color-font-option-button);
   /* padding: 4px 0; */
   /* margin: 4px 6px; */
