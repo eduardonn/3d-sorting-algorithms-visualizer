@@ -14,8 +14,8 @@ export const algorithmsList = [
 type swapCallbackType = (a: number, b: number, durationMs: number) => Promise<void>;
 
 export const useAnimatedSortings = (durationMs: number = 200) => {
-  const [ animDuration ] = useAnimationStore(
-    state => [ state.animDuration ]);
+  const [ animSpeed ] = useAnimationStore(
+    state => [ state.animSpeed ]);
   
   console.log('in useAnimatedSortings');
 
@@ -64,7 +64,7 @@ export const useAnimatedSortings = (durationMs: number = 200) => {
   const swap = async (arr: Array<number>, a: number, b: number, swapCallback: swapCallbackType) => {
     if (a === b) return;
 
-    await swapCallback(a, b, animDuration);
+    await swapCallback(a, b, animSpeed);
     [arr[a], arr[b]] = [arr[b], arr[a]];
   }
 

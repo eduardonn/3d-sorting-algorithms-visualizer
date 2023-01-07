@@ -1,71 +1,94 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { Mesh, Vector3 } from 'three';
-import { RefArray } from '../components/ArrayElements/ArrayElements';
+import { RefArray } from '../components/ArrayElements';
 import { useAnimationStore } from './useAnimationStore';
 import { useAnimation } from './useAnimation';
-import { AnimatedSorter } from '../utils/';
+import {
+  AnimatedSorter,
+  SwapCallback,
+  SetColorCallback,
+  ResetColorCallback } from '../utils/animatedSortings';
+import { useArrayStore } from './useArrayStore';
+
+const DEFAULT_DURATION_MS = 1000.0;
 
 export const useAnimateArrayElements = (refArray: RefArray, elements: Array<number>) => {
-  const [ animDuration, setStartAnimation ] = useAnimationStore(
-    state => [ state.animDuration, state.setStartAnimation ]);
-  const { addAnimation } = useAnimation();
+  const [ animSpeed, setHandleSortButton, setHandleRandomizeButton ] = useAnimationStore(
+    state => [ state.animSpeed, state.setHandleSortButton, state.setHandleRandomizeButton ]);
+  const [ randomizeArrayElements ] = useArrayStore(state => [ state.randomizeArrayElements ]);
+  const { animate, cancelAllAnimations } = useAnimation();
 
   const moveElement = useCallback(
-      (meshA: Mesh, meshB: Mesh, duration: number, zOffset: number) => {
+      (meshA: Mesh, meshB: Mesh, durationMs: number, zOffset: number) => {
     let initialPos = meshA.position.clone();
     let finalPos = meshB.position.clone();
     finalPos.y = initialPos.y;
 
-    addAnimation(meshA, [
+    animate(meshA, [
       {position: initialPos, progress: 0},
       {position: initialPos.clone().add(new Vector3(0, 0, zOffset)), progress: 0.2},
       {position: finalPos.clone().add(new Vector3(0, 0, zOffset)), progress: 0.8},
       {position: finalPos, progress: 1},
     ],
-    duration,);
-  }, [addAnimation]);
+    durationMs);
+  }, [animate]);
 
-  const swapElements = useCallback(
-      (arrayRefs: RefArray, a: number, b: number, duration: number) => {
-    moveElement(arrayRefs[a].current, arrayRefs[b].current, duration, 1.2);
-    moveElement(arrayRefs[b].current, arrayRefs[a].current, duration, 2.4);
+  const swapCallback: SwapCallback = useCallback(
+      (a, b, speedMultiplier = 1) => {
+    const duration = speedMultiplier * DEFAULT_DURATION_MS / animSpeed;
+    
+    moveElement(refArray[a].current, refArray[b].current, duration, 1.2);
+    moveElement(refArray[b].current, refArray[a].current, duration, 2.4);
 
-    [arrayRefs[a].current, arrayRefs[b].current] =
-      [arrayRefs[b].current, arrayRefs[a].current];
+    [refArray[a].current, refArray[b].current] =
+      [refArray[b].current, refArray[a].current];
       
-    return new Promise(res => setTimeout(res, duration + 100));
-  }, []);
+    return new Promise(res => setTimeout(res, duration));
+  }, [moveElement, animSpeed, refArray]);
 
-  const swapCallback = useCallback((a: number, b: number) =>
-    swapElements(refArray, a, b, animDuration),
-    [animDuration, refArray]);
+  const setElementColor: SetColorCallback = useCallback(
+      (index, color, speedMultiplier = 1) => {
+    // @ts-ignore
+    refArray[index].current.material.color.setHex(color);
+    return new Promise(res => setTimeout(res, speedMultiplier * DEFAULT_DURATION_MS / animSpeed));
+  }, [animSpeed, refArray]);
+
+  const resetElementColor: ResetColorCallback = useCallback(
+      (index, speedMultiplier = 1) => {
+    // @ts-ignore
+    refArray[index].current.material.color.setHex(0xFFFFFF);
+    return new Promise(res => setTimeout(res, speedMultiplier * DEFAULT_DURATION_MS / animSpeed));
+  }, [animSpeed, refArray]);
 
   const animatedSorter = useMemo(
-    () => new AnimatedSorter(swapCallback),
+    () => {
+      console.log('animatedSorter created');
+      return new AnimatedSorter(swapCallback, setElementColor, resetElementColor);
+    },
     []
   );
 
   useEffect(() => {
     animatedSorter.swapCallback = swapCallback;
-  }, [swapCallback])
+    animatedSorter.setElementColor = setElementColor;
+    animatedSorter.resetElementColor = resetElementColor;
+  }, [swapCallback, setElementColor, resetElementColor])
 
   useEffect(() => {
-    const startAnimationCallback = (algorithmOption: string) => {
+    setHandleSortButton(async (algorithmOption: string) => {
+      cancelAllAnimations();
+      await animatedSorter.stop();
+      // @ts-ignore
       animatedSorter[algorithmOption as keyof AnimatedSorter](elements);
-    };
+    });
+    
+    setHandleRandomizeButton(async () => {
+      cancelAllAnimations();
+      await animatedSorter.stop();
 
-    // const startAnimationCallback = (algorithmOption: string) => {
-    //   // const sorts = Object.create(animatedSortings);
-    //   sorter[algorithmOption as keyof (typeof sorter)](elements, (a, b, animDuration) => {
-    //     swapElements(refArray, a, b, animDuration);
-    //     return new Promise(res => setTimeout(res, animDuration + 100));
-    //   });
-    // };
-
-    setStartAnimation(startAnimationCallback);
-    },
-    [elements, refArray]
+      randomizeArrayElements();
+    });
+  },
+    [elements, setHandleSortButton, setHandleRandomizeButton, animatedSorter]
   );
-
-  return { swapElements };
 }

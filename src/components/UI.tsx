@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { ArraySettings, useArrayStore } from '../../hooks/useArrayStore';
-import { useAnimationStore } from '../../hooks/useAnimationStore';
-import { algorithmsList, createRandomArray } from '../../utils';
+import { OptionalArraySettings, ArraySettings, useArrayStore } from '../hooks/useArrayStore';
+import { useAnimationStore } from '../hooks/useAnimationStore';
+import { algorithmsList, createRandomArray } from '../utils';
 import './UI.css';
 
 interface SortOptionsProps {
   handleOnClick: (value: string) => void;
   activeIndex: number;
 }
+
+const MAX_AMOUNT = 100;
+const MIN_AMOUNT = 1;
 
 const SortOptionButtons: React.FC<SortOptionsProps> = ({ handleOnClick, activeIndex }) => {
   return (
@@ -34,30 +37,48 @@ const SortOptionButtons: React.FC<SortOptionsProps> = ({ handleOnClick, activeIn
   );
 };
 
+const AnimationSpeedSlider = () => {
+  const [ animSpeed, setAnimSpeed ] = useAnimationStore(
+    state => [ state.animSpeed, state.setAnimSpeed ]);
+
+  return (
+    <div className='inputControls'>
+      <span className="textInputs margin-right">Animation Speed</span>
+      <div className='inputControls'>
+        <input
+          type="range"
+          style={{ width: "11vw" }}
+          min="0.1"
+          max="10.0"
+          step="0.1"
+          value={animSpeed}
+          onChange={ (e) => setAnimSpeed(parseFloat(e.target.value)) }
+        />
+        <span 
+          className="textInputs"
+          style={{width: "4vw", textAlign: "right"}}
+          id="rangeValueElement"
+        >
+          { animSpeed + 'x' }
+        </span>
+      </div>
+    </div>
+  );
+}
+
 const UI = () => {
-  const [ arraySettings, setArraySettings, setArrayElements ] = useArrayStore(
-    state => [ state.arraySettings, state.setArraySettings, state.setArrayElements ]
+  const [ arraySettings, setArraySettings ] = useArrayStore(
+    state => [ state.arraySettings, state.setArraySettings ]
   )
 
-  const [ animDuration, setAnimDuration, startAnimation ] = useAnimationStore(
-    state => [ state.animDuration, state.setAnimDuration, state.startAnimation ]);
+  const [ handleSortButton, handleRandomizeButton ] = useAnimationStore(
+    state => [ state.handleSortButton, state.handleRandomizeButton ]);
 
   const [ algorithmOptionSelected, setAlgorithmOptionSelected] = useState(algorithmsList[0].name);
 
-  const handleOnClickRandomize = (arraySettings: ArraySettings) => {
-    setArrayElements(createRandomArray(
-      arraySettings.minElement,
-      arraySettings.maxElement,
-      arraySettings.amountElements
-    ));
-  }
-
-  const handleAnimDurationOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAnimDuration(parseInt(e.target.value));
-  }
 
   const handleMaxElementOnChange = (
-      setArraySettings: (settings: ArraySettings) => void,
+      setArraySettings: (settings: OptionalArraySettings) => void,
       e: React.ChangeEvent<HTMLInputElement>) => {
     const MAX_ELEMENT = 100;
     const MIN_ELEMENT = 1;
@@ -72,18 +93,15 @@ const UI = () => {
   }
   
   const handleAmountElementOnChange = (
-      setArraySettings: (settings: ArraySettings) => void,
+      setArraySettings: (settings: OptionalArraySettings) => void,
       e: React.ChangeEvent<HTMLInputElement>) => {
-    const MAX_AMOUNT = 100;
-    const MIN_AMOUNT = 1;
     let newValue = parseInt(e.target.value);
   
-    if (isNaN(newValue)
-      || newValue > MAX_AMOUNT
-      || newValue < MIN_AMOUNT)
-      return;
+    if (isNaN(newValue)) return;
+    if (newValue > MAX_AMOUNT) newValue = MAX_AMOUNT;
+    if (newValue < MIN_AMOUNT) newValue = MIN_AMOUNT;
     
-    setArraySettings({ amountElements: newValue });
+    setArraySettings({ numElements: newValue });
   }
 
   return (
@@ -93,59 +111,37 @@ const UI = () => {
         <input
           className="parameterInputs"
           value={arraySettings.maxElement}
-          id="maxNumber"
           onChange={ e => handleMaxElementOnChange(setArraySettings, e) }
         />
       </div>
       <div className='inputControls'>
-        <span className="textInputs margin-right">Amount of Elements</span>
+        <span className="textInputs margin-right">Array Size</span>
         <input
           className="parameterInputs"
-          value={arraySettings.amountElements}
-          id="amountElements"
+          value={arraySettings.numElements}
           onChange={ e => handleAmountElementOnChange(setArraySettings, e) }
           />
       </div>
-      <div className='inputControls'>
-        <span className="textInputs margin-right">Animation Speed</span>
-        <div className='inputControls'>
-          <input
-            type="range"
-            min="200"
-            max="3000"
-            step="50"
-            value={animDuration}
-            id="animDuration"
-            onChange={handleAnimDurationOnChange}
-          />
-          <span 
-            className="textInputs"
-            style={{width: "4vw", textAlign: "right"}}
-            id="rangeValueElement"
-          >
-            { animDuration >= 1000
-            ? animDuration / 1000 + 's'
-            : animDuration + "ms" }
-          </span>
-        </div>
-      </div>
+      <AnimationSpeedSlider />
       <SortOptionButtons
         activeIndex={0}
         handleOnClick={setAlgorithmOptionSelected}
       />
       <div
-        style={{height: '2px', width:'100%', backgroundColor: '#4a4a4a', margin: '5px auto 5px auto'}}>
+        style={{height: '1px', width:'100%', backgroundColor: '#404040', margin: '5px auto 5px auto'}}>
       </div>
       <div className='inputControls'>
         <button
           id="sort-array-button"
           className="background-radial back-filter shadow"
-          onClick={() => startAnimation(algorithmOptionSelected)}
-        >Sort</button>
+          onClick={() => handleSortButton(algorithmOptionSelected)}
+        >Sort
+        </button>
         <button
           id="randomize-array-button"
           className="background-radial back-filter shadow"
-          onClick={() => handleOnClickRandomize(arraySettings)}>Randomize</button>
+          onClick={() => handleRandomizeButton()}>Randomize
+        </button>
       </div>
     </div>
   );

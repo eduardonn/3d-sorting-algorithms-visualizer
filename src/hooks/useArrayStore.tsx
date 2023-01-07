@@ -2,7 +2,13 @@ import create from 'zustand'
 import { createRandomArray } from '../utils';
 
 export interface ArraySettings {
-  amountElements?: number;
+  numElements: number;
+  minElement: number;
+  maxElement: number;
+}
+
+export interface OptionalArraySettings {
+  numElements?: number;
   minElement?: number;
   maxElement?: number;
 }
@@ -11,27 +17,34 @@ interface ArrayStore {
   elements: Array<number>;
   setArrayElements: (elements: Array<number>) => void;
   arraySettings: ArraySettings;
-  setArraySettings: (settings: ArraySettings) => void;
+  setArraySettings: (settings: OptionalArraySettings) => void;
+  randomizeArrayElements: () => void;
 }
 
 export const useArrayStore = create<ArrayStore>(set => ({
   elements: createRandomArray(1, 10, 10),
   setArrayElements: elements => set(_ => ({ elements })),
   arraySettings: {
-    amountElements: 10,
+    numElements: 10,
     minElement: 1,
     maxElement: 10,
   },
-  setArraySettings: settings => { 
-    set(
-      state => ({
-        elements: createRandomArray(
-          settings.minElement || state.arraySettings.minElement,
-          settings.maxElement || state.arraySettings.maxElement,
-          settings.amountElements || state.arraySettings.amountElements,
-        ),
-        arraySettings: { ...state.arraySettings, ...settings },
-      })
+  randomizeArrayElements: () => set(state => ({
+    elements: createRandomArray(
+      state.arraySettings.minElement,
+      state.arraySettings.maxElement,
+      state.arraySettings.numElements
+    )
+  })),
+  setArraySettings: settings => {
+    set(state => ({
+      elements: createRandomArray(
+        settings.minElement || state.arraySettings.minElement,
+        settings.maxElement || state.arraySettings.maxElement,
+        settings.numElements || state.arraySettings.numElements,
+      ),
+      arraySettings: { ...state.arraySettings, ...settings },
+    })
     )
   },
 }))

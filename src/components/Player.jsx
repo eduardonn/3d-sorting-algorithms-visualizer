@@ -2,10 +2,10 @@ import { useThree, useFrame } from '@react-three/fiber';
 import { useSphere } from '@react-three/cannon';
 import { useRef, useEffect, useCallback } from 'react';
 import { Vector3 } from 'three';
-import { useKeyboard } from '../../hooks/useKeyboard';
-import { useArrayStore } from '../../hooks/useArrayStore.tsx';
+import { useKeyboard } from '../hooks/useKeyboard';
+import { useArrayStore } from '../hooks/useArrayStore.tsx';
 import { useControls } from 'leva';
-import { createRandomArray } from '../../utils';
+import { createRandomArray } from '../utils';
 
 const JUMP_FORCE = 400;
 // const WALK_FORCE = 1250;

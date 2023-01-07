@@ -3,17 +3,23 @@ import create from 'zustand';
 type StartAnimation = (algorithmOption: string) => void;
 
 interface AnimationState {
-  animDuration: number;
-  setAnimDuration: (value: number) => void;
-  startAnimation: StartAnimation;
-  setStartAnimation: (animationCallback: StartAnimation) => void;
+  animSpeed: number;
+  setAnimSpeed: (value: number) => void;
+  handleSortButton: StartAnimation;
+  setHandleSortButton: (animationCallback: StartAnimation) => void;
+  handleRandomizeButton: () => void;
+  setHandleRandomizeButton: (randomizeButtonCallback: () => void) => void;
 }
 
 export const useAnimationStore = create<AnimationState>(set => ({
-  animDuration: 750,
-  setAnimDuration: value => set(() => ({animDuration: value})),
-  startAnimation: algorithmOption => { console.warn('startAnimation hasn\'t been set') },
-  setStartAnimation: animationCallback => set(() => ({
-    startAnimation: animationCallback,
-  }))
+  animSpeed: 1,
+  setAnimSpeed: value => set(() => ({animSpeed: value})),
+  handleSortButton: algorithmOption => { console.warn('startAnimation hasn\'t been set') },
+  setHandleSortButton: animationCallback => set(() => ({
+    handleSortButton: animationCallback,
+  })),
+  handleRandomizeButton: () => { console.warn('handleRandomizeButton hasn\'t been set') },
+  setHandleRandomizeButton: randomizeButtonCallback => set(() => ({
+    handleRandomizeButton: randomizeButtonCallback,
+  })),
 }));

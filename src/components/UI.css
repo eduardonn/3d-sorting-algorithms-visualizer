@@ -48,10 +48,6 @@ label {
   margin: 2px;
 }
 
-#animDuration {
-  width: 11vw;
-}
-
 .inputControls {
   display: flex;
   justify-content: space-between;
